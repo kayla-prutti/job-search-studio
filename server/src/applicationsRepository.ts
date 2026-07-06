@@ -6,7 +6,8 @@ import type {
   UpdateApplicationInput,
 } from "./types.js";
 
-type ApplicationRow = Application;
+const applicationColumns =
+  "id, role, company, salary, status, appliedDate, followUpDate, contact, notes, source, priority, jobUrl, validationStatus";
 
 type ListFilters = {
   status?: ApplicationStatus;
@@ -15,18 +16,27 @@ type ListFilters = {
   search?: string;
 };
 
-const listStatement = db.prepare("SELECT * FROM applications ORDER BY rowid");
-const getStatement = db.prepare("SELECT * FROM applications WHERE id = ?");
+const listStatement = db.prepare(
+  `SELECT ${applicationColumns} FROM applications WHERE userId = ? ORDER BY rowid`
+);
+const getStatement = db.prepare(
+  `SELECT ${applicationColumns} FROM applications WHERE userId = ? AND id = ?`
+);
 const insertStatement = db.prepare(`
   INSERT INTO applications
-    (id, role, company, salary, status, appliedDate, followUpDate, contact, notes, source, priority, jobUrl, validationStatus)
+    (id, userId, role, company, salary, status, appliedDate, followUpDate, contact, notes, source, priority, jobUrl, validationStatus)
   VALUES
-    (@id, @role, @company, @salary, @status, @appliedDate, @followUpDate, @contact, @notes, @source, @priority, @jobUrl, @validationStatus)
+    (@id, @userId, @role, @company, @salary, @status, @appliedDate, @followUpDate, @contact, @notes, @source, @priority, @jobUrl, @validationStatus)
 `);
-const deleteStatement = db.prepare("DELETE FROM applications WHERE id = ?");
+const deleteStatement = db.prepare(
+  "DELETE FROM applications WHERE userId = ? AND id = ?"
+);
 
-export const listApplications = (filters: ListFilters): Application[] => {
-  let results = listStatement.all() as ApplicationRow[];
+export const listApplications = (
+  userId: string,
+  filters: ListFilters
+): Application[] => {
+  let results = listStatement.all(userId) as Application[];
 
   if (filters.status) {
     results = results.filter((application) => application.status === filters.status);
@@ -54,19 +64,26 @@ export const listApplications = (filters: ListFilters): Application[] => {
   return results;
 };
 
-export const getApplication = (id: string): Application | undefined =>
-  getStatement.get(id) as ApplicationRow | undefined;
+export const getApplication = (
+  userId: string,
+  id: string
+): Application | undefined =>
+  getStatement.get(userId, id) as Application | undefined;
 
-export const createApplication = (application: Application): Application => {
-  insertStatement.run(application);
+export const createApplication = (
+  userId: string,
+  application: Application
+): Application => {
+  insertStatement.run({ ...application, userId });
   return application;
 };
 
 export const updateApplication = (
+  userId: string,
   id: string,
   updates: UpdateApplicationInput
 ): Application | undefined => {
-  const existing = getApplication(id);
+  const existing = getApplication(userId, id);
 
   if (!existing) {
     return undefined;
@@ -79,12 +96,13 @@ export const updateApplication = (
     .join(", ");
 
   if (setClause) {
-    db.prepare(`UPDATE applications SET ${setClause} WHERE id = @id`).run(updated);
+    db.prepare(
+      `UPDATE applications SET ${setClause} WHERE id = @id AND userId = @userId`
+    ).run({ ...updated, userId });
   }
 
   return updated;
 };
 
-export const deleteApplication = (id: string): boolean =>
-  deleteStatement.run(id).changes > 0;
-http://127.0.0.1:5173/
+export const deleteApplication = (userId: string, id: string): boolean =>
+  deleteStatement.run(userId, id).changes > 0;

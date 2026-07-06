@@ -26,3 +26,9 @@ export type CreateApplicationInput = Omit<Application, "id"> & {
 };
 
 export type UpdateApplicationInput = Partial<CreateApplicationInput>;
+
+export type User = {
+  id: string;
+  email: string;
+  createdAt: string;
+};

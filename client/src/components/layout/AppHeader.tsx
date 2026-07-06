@@ -1,10 +1,12 @@
-import { Link } from "lucide-react";
+import { Link, LogOut } from "lucide-react";
 
 type AppHeaderProps = {
   onAddJobUrl: () => void;
+  onLogout: () => void;
+  userEmail: string;
 };
 
-export function AppHeader({ onAddJobUrl }: AppHeaderProps) {
+export function AppHeader({ onAddJobUrl, onLogout, userEmail }: AppHeaderProps) {
   return (
     <header className="app-header">
       <div className="brand-mark">JS</div>
@@ -27,6 +29,17 @@ export function AppHeader({ onAddJobUrl }: AppHeaderProps) {
             Paste a job posting URL so the app can extract role, company,
             salary, and description details.
           </div>
+        </div>
+        <div className="user-menu">
+          <span>{userEmail}</span>
+          <button
+            aria-label="Log out"
+            className="ghost-icon-button"
+            onClick={onLogout}
+            type="button"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </header>

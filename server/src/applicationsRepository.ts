@@ -87,4 +87,3 @@ export const updateApplication = (
 
 export const deleteApplication = (id: string): boolean =>
   deleteStatement.run(id).changes > 0;
-http://127.0.0.1:5173/

@@ -1,5 +1,11 @@
 import express from "express";
-import { applications } from "./data/applications.js";
+import {
+  createApplication,
+  deleteApplication,
+  getApplication,
+  listApplications,
+  updateApplication,
+} from "./applicationsRepository.js";
 import type {
   Application,
   ApplicationStatus,
@@ -289,48 +295,32 @@ app.post("/api/job-url/extract", async (req, res) => {
 
 app.get("/api/applications", (req, res) => {
   const { status, priority, validationStatus, search } = req.query;
-  let results = [...applications];
 
-  if (typeof status === "string") {
-    if (!isApplicationStatus(status)) {
-      res.status(400).json({ error: "Invalid application status." });
-      return;
-    }
-
-    results = results.filter((application) => application.status === status);
+  if (typeof status === "string" && !isApplicationStatus(status)) {
+    res.status(400).json({ error: "Invalid application status." });
+    return;
   }
 
-  if (typeof priority === "string") {
-    if (!isPriority(priority)) {
-      res.status(400).json({ error: "Invalid priority." });
-      return;
-    }
-
-    results = results.filter(
-      (application) => application.priority === priority
-    );
+  if (typeof priority === "string" && !isPriority(priority)) {
+    res.status(400).json({ error: "Invalid priority." });
+    return;
   }
 
-  if (typeof validationStatus === "string") {
-    if (!isValidationStatus(validationStatus)) {
-      res.status(400).json({ error: "Invalid validation status." });
-      return;
-    }
-
-    results = results.filter(
-      (application) => application.validationStatus === validationStatus
-    );
+  if (
+    typeof validationStatus === "string" &&
+    !isValidationStatus(validationStatus)
+  ) {
+    res.status(400).json({ error: "Invalid validation status." });
+    return;
   }
 
-  if (typeof search === "string") {
-    const normalizedSearch = search.toLowerCase();
-
-    results = results.filter(
-      (application) =>
-        application.role.toLowerCase().includes(normalizedSearch) ||
-        application.company.toLowerCase().includes(normalizedSearch)
-    );
-  }
+  const results = listApplications({
+    status: typeof status === "string" ? status : undefined,
+    priority: typeof priority === "string" ? priority : undefined,
+    validationStatus:
+      typeof validationStatus === "string" ? validationStatus : undefined,
+    search: typeof search === "string" ? search : undefined,
+  });
 
   res.json({
     applications: results,
@@ -338,7 +328,7 @@ app.get("/api/applications", (req, res) => {
 });
 
 app.get("/api/applications/:id", (req, res) => {
-  const application = applications.find(({ id }) => id === req.params.id);
+  const application = getApplication(req.params.id);
 
   if (!application) {
     res.status(404).json({ error: "Application not found." });
@@ -387,21 +377,12 @@ app.post("/api/applications", (req, res) => {
     validationStatus: input.validationStatus,
   };
 
-  applications.push(application);
+  createApplication(application);
 
   res.status(201).json({ application });
 });
 
 app.patch("/api/applications/:id", (req, res) => {
-  const applicationIndex = applications.findIndex(
-    ({ id }) => id === req.params.id
-  );
-
-  if (applicationIndex === -1) {
-    res.status(404).json({ error: "Application not found." });
-    return;
-  }
-
   const input = req.body as UpdateApplicationInput;
 
   if (input.status !== undefined && !isApplicationStatus(input.status)) {
@@ -422,28 +403,23 @@ app.patch("/api/applications/:id", (req, res) => {
     return;
   }
 
-  const updatedApplication: Application = {
-    ...applications[applicationIndex],
-    ...input,
-    id: applications[applicationIndex].id,
-  };
+  const updatedApplication = updateApplication(req.params.id, input);
 
-  applications[applicationIndex] = updatedApplication;
+  if (!updatedApplication) {
+    res.status(404).json({ error: "Application not found." });
+    return;
+  }
 
   res.json({ application: updatedApplication });
 });
 
 app.delete("/api/applications/:id", (req, res) => {
-  const applicationIndex = applications.findIndex(
-    ({ id }) => id === req.params.id
-  );
+  const wasDeleted = deleteApplication(req.params.id);
 
-  if (applicationIndex === -1) {
+  if (!wasDeleted) {
     res.status(404).json({ error: "Application not found." });
     return;
   }
-
-  applications.splice(applicationIndex, 1);
 
   res.status(204).send();
 });

@@ -9,3 +9,4 @@ build/
 npm-debug.log*
 *.tsbuildinfo
 .playwright-mcp/
+server/data/

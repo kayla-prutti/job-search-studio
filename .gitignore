@@ -7,3 +7,6 @@ build/
 !.env.example
 .DS_Store
 npm-debug.log*
+*.tsbuildinfo
+.playwright-mcp/
+server/data/

@@ -1,4 +1,4 @@
-export type DatasetView = "table" | "board" | "history" | "diff";
+export type DatasetView = "table" | "board" | "followups" | "insights";
 
 type DatasetTabsProps = {
   activeView: DatasetView;
@@ -8,8 +8,8 @@ type DatasetTabsProps = {
 const tabs: Array<{ label: string; value: DatasetView }> = [
   { label: "Applications table", value: "table" },
   { label: "Status board", value: "board" },
-  { label: "Version history", value: "history" },
-  { label: "Diff", value: "diff" },
+  { label: "Follow-ups", value: "followups" },
+  { label: "Insights", value: "insights" },
 ];
 
 export function DatasetTabs({ activeView, onViewChange }: DatasetTabsProps) {

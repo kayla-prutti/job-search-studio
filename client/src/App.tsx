@@ -13,6 +13,7 @@ import { EditApplicationModal } from "./components/modals/EditApplicationModal";
 import { ImportJobUrlModal } from "./components/modals/ImportJobUrlModal";
 import { ApplicationsGrid } from "./features/applications-table/ApplicationsGrid";
 import { ApplicationsToolbar } from "./features/applications-table/ApplicationsToolbar";
+import { FollowUpsView } from "./features/follow-ups/FollowUpsView";
 import { StatusBoard } from "./features/status-board/StatusBoard";
 import "./styles.css";
 
@@ -281,10 +282,18 @@ function App() {
             onEdit={setEditingApplication}
             onStatusChange={updateApplicationStatus}
           />
+        ) : activeView === "followups" ? (
+          <FollowUpsView
+            applications={applications}
+            onEdit={setEditingApplication}
+          />
         ) : (
           <section className="placeholder-panel">
-            <h2>Coming soon</h2>
-            <p>This view is not built yet.</p>
+            <h2>Insights coming soon</h2>
+            <p>
+              This will show status mix, source performance, salary trends, and
+              conversion rates.
+            </p>
           </section>
         )}
       </main>

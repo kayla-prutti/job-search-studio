@@ -490,6 +490,127 @@ p {
   color: #64748b;
 }
 
+.followups-view {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 16px;
+  align-content: start;
+  min-height: 0;
+  overflow: auto;
+}
+
+.followup-section {
+  display: grid;
+  align-content: start;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.followup-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.followup-section-header h2 {
+  color: #1e293b;
+  font-size: 17px;
+}
+
+.followup-section-header p {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.followup-section-header > span {
+  display: grid;
+  min-width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  color: #2563eb;
+  background: #dbeafe;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.followup-list {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.followup-item {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  background: #ffffff;
+  text-align: left;
+}
+
+.followup-item:hover {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+
+.followup-item strong {
+  display: block;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.followup-item span {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.followup-meta {
+  display: grid;
+  grid-template-columns: 116px 1fr;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.followup-meta small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.followup-meta small:last-child {
+  grid-column: 2;
+}
+
+.followup-meta .badge {
+  grid-row: 1 / span 2;
+  justify-self: center;
+  align-self: center;
+}
+
+.followup-empty {
+  display: grid;
+  min-height: 84px;
+  place-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 650;
+}
+
 .ag-root-wrapper {
   border: 0 !important;
 }
@@ -752,6 +873,10 @@ select:focus {
   }
 
   .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .followups-view {
     grid-template-columns: 1fr;
   }
 }

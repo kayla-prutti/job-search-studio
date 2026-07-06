@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { statusOptions } from "../constants/applicationOptions";
-import type { ApplicationStatus } from "../types/application";
+import { statusOptions } from "../../shared/constants/applicationOptions";
+import type { ApplicationStatus } from "../../shared/types/application";
 
 type SidebarProps = {
   applicationCount: number;

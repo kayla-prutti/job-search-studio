@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import type { Application } from "../types/application";
+import type { Application } from "../../shared/types/application";
 
 type DeleteApplicationModalProps = {
   application: Application;

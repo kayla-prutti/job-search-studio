@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { statusOptions } from "./constants/applicationOptions";
+import { statusOptions } from "./shared/constants/applicationOptions";
 import type {
   Application,
   ApplicationStatus,
   ExtractJobUrlResponse,
-} from "./types/application";
-import { AppHeader } from "./components/AppHeader";
-import { ApplicationsGrid } from "./components/ApplicationsGrid";
-import { ApplicationsToolbar } from "./components/ApplicationsToolbar";
-import { DatasetTabs } from "./components/DatasetTabs";
-import { DeleteApplicationModal } from "./components/DeleteApplicationModal";
-import { EditApplicationModal } from "./components/EditApplicationModal";
-import { ImportJobUrlModal } from "./components/ImportJobUrlModal";
-import { Sidebar } from "./components/Sidebar";
+} from "./shared/types/application";
+import { AppHeader } from "./components/layout/AppHeader";
+import { DatasetTabs, type DatasetView } from "./components/layout/DatasetTabs";
+import { Sidebar } from "./components/layout/Sidebar";
+import { DeleteApplicationModal } from "./components/modals/DeleteApplicationModal";
+import { EditApplicationModal } from "./components/modals/EditApplicationModal";
+import { ImportJobUrlModal } from "./components/modals/ImportJobUrlModal";
+import { ApplicationsGrid } from "./features/applications-table/ApplicationsGrid";
+import { ApplicationsToolbar } from "./features/applications-table/ApplicationsToolbar";
+import { StatusBoard } from "./features/status-board/StatusBoard";
 import "./styles.css";
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
   const [jobDescriptionUrl, setJobDescriptionUrl] = useState("");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [activeView, setActiveView] = useState<DatasetView>("table");
 
   useEffect(() => {
     async function loadApplications() {
@@ -148,6 +150,48 @@ function App() {
     }
   };
 
+  const updateApplicationStatus = async (
+    application: Application,
+    status: ApplicationStatus
+  ) => {
+    const previousApplications = applications;
+
+    setApplications((currentApplications) =>
+      currentApplications.map((currentApplication) =>
+        currentApplication.id === application.id
+          ? { ...currentApplication, status }
+          : currentApplication
+      )
+    );
+
+    try {
+      const response = await fetch(`/api/applications/${application.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to update application status.");
+      }
+
+      const data = (await response.json()) as { application: Application };
+
+      setApplications((currentApplications) =>
+        currentApplications.map((currentApplication) =>
+          currentApplication.id === data.application.id
+            ? data.application
+            : currentApplication
+        )
+      );
+    } catch (err) {
+      setApplications(previousApplications);
+      setError(err instanceof Error ? err.message : "Status update failed.");
+    }
+  };
+
   const extractJobUrl = async () => {
     setIsSaving(true);
     setError(null);
@@ -212,21 +256,37 @@ function App() {
       />
 
       <main className="content">
-        <DatasetTabs />
-        <ApplicationsToolbar
-          onQuickFilterChange={setQuickFilter}
-          quickFilter={quickFilter}
-        />
-        <section className="grid-card">
-          <ApplicationsGrid
+        <DatasetTabs activeView={activeView} onViewChange={setActiveView} />
+
+        {activeView === "table" ? (
+          <>
+            <ApplicationsToolbar
+              onQuickFilterChange={setQuickFilter}
+              quickFilter={quickFilter}
+            />
+            <section className="grid-card">
+              <ApplicationsGrid
+                applications={applications}
+                error={error}
+                isLoading={isLoading}
+                onDelete={setDeleteApplication}
+                onEdit={setEditingApplication}
+                quickFilter={quickFilter}
+              />
+            </section>
+          </>
+        ) : activeView === "board" ? (
+          <StatusBoard
             applications={applications}
-            error={error}
-            isLoading={isLoading}
-            onDelete={setDeleteApplication}
             onEdit={setEditingApplication}
-            quickFilter={quickFilter}
+            onStatusChange={updateApplicationStatus}
           />
-        </section>
+        ) : (
+          <section className="placeholder-panel">
+            <h2>Coming soon</h2>
+            <p>This view is not built yet.</p>
+          </section>
+        )}
       </main>
 
       {editingApplication && (

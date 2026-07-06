@@ -11,9 +11,12 @@ import {
   ModuleRegistry,
   themeQuartz,
 } from "ag-grid-community";
-import { formatCurrency } from "../utils/format";
-import type { Application, ApplicationStatus } from "../types/application";
-import { StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "../../components/ui/StatusBadge";
+import type {
+  Application,
+  ApplicationStatus,
+} from "../../shared/types/application";
+import { formatCurrency } from "../../shared/utils/format";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 

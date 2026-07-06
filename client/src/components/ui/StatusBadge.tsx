@@ -1,4 +1,4 @@
-import type { ApplicationStatus } from "../types/application";
+import type { ApplicationStatus } from "../../shared/types/application";
 
 type StatusBadgeProps = {
   value: ApplicationStatus;

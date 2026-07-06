@@ -3,13 +3,13 @@ import {
   priorityOptions,
   sourceOptions,
   statusOptions,
-} from "../constants/applicationOptions";
+} from "../../shared/constants/applicationOptions";
 import type {
   Application,
   ApplicationStatus,
   Priority,
-} from "../types/application";
-import { fromInputDate, toInputDate } from "../utils/format";
+} from "../../shared/types/application";
+import { fromInputDate, toInputDate } from "../../shared/utils/format";
 
 type EditApplicationModalProps = {
   application: Application;

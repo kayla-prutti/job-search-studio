@@ -358,6 +358,138 @@ p {
   overflow: hidden;
 }
 
+.board-view {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 14px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.board-column {
+  display: flex;
+  min-height: 520px;
+  min-width: 180px;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background 140ms ease;
+}
+
+.board-column.drag-over {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.board-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.board-column-header span:last-child {
+  display: grid;
+  min-width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  color: #64748b;
+  background: #f1f5f9;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.board-card-list {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+}
+
+.board-card {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px;
+  color: #334155;
+  background: #ffffff;
+  text-align: left;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.board-card:hover {
+  border-color: #bfdbfe;
+  background: #f8fbff;
+}
+
+.board-card:active {
+  cursor: grabbing;
+}
+
+.board-card strong {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.board-card span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.board-card-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.board-card-meta small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.board-empty {
+  display: grid;
+  min-height: 92px;
+  place-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.placeholder-panel {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  background: #ffffff;
+}
+
+.placeholder-panel h2 {
+  color: #1e293b;
+  font-size: 20px;
+}
+
+.placeholder-panel p {
+  color: #64748b;
+}
+
 .ag-root-wrapper {
   border: 0 !important;
 }

@@ -17,6 +17,7 @@ export type Application = {
   appliedDate: string | null;
   followUpDate: string | null;
   contact: string | null;
+  notes: string | null;
   source: string;
   priority: Priority;
   jobUrl: string;

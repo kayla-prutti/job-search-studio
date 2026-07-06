@@ -82,7 +82,9 @@ export function EditApplicationModal({
             <input
               type="number"
               value={application.salary}
-              onChange={(event) => onUpdate({ salary: Number(event.target.value) })}
+              onChange={(event) =>
+                onUpdate({ salary: Number(event.target.value) })
+              }
             />
           </label>
 
@@ -120,6 +122,12 @@ export function EditApplicationModal({
                 onUpdate({ followUpDate: fromInputDate(event.target.value) })
               }
             />
+            {application.status === "Interviewing" &&
+              !application.followUpDate && (
+                <small className="field-error">
+                  Set a follow-up date for interviewing roles
+                </small>
+              )}
           </label>
 
           <label>
@@ -128,6 +136,17 @@ export function EditApplicationModal({
               value={application.contact ?? ""}
               onChange={(event) =>
                 onUpdate({ contact: event.target.value || null })
+              }
+            />
+          </label>
+
+          <label className="full-field">
+            Notes
+            <textarea
+              rows={3}
+              value={application.notes ?? ""}
+              onChange={(event) =>
+                onUpdate({ notes: event.target.value || null })
               }
             />
           </label>

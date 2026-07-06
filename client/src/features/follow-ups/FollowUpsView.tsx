@@ -47,9 +47,11 @@ export function FollowUpsView({ applications, onEdit }: FollowUpsViewProps) {
       }),
     },
     {
-      title: "Missing contact",
-      description: "Applications without a recruiter or contact name.",
-      items: activeApplications.filter((application) => !application.contact),
+      title: "Has notes",
+      description: "Applications with saved notes to review.",
+      items: activeApplications.filter(
+        (application) => !!application.notes?.trim()
+      ),
     },
     {
       title: "Interviewing without next step",
@@ -106,6 +108,9 @@ export function FollowUpsView({ applications, onEdit }: FollowUpsViewProps) {
                     </small>
                     <small>Contact: {application.contact ?? "Missing"}</small>
                   </div>
+                  {application.notes && (
+                    <p className="followup-note">{application.notes}</p>
+                  )}
                 </button>
               ))
             ) : (

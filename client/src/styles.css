@@ -570,7 +570,7 @@ p {
   font-weight: 700;
 }
 
-.followup-item span {
+.followup-item span:not(.badge) {
   display: block;
   margin-top: 3px;
   color: #64748b;
@@ -598,6 +598,15 @@ p {
   grid-row: 1 / span 2;
   justify-self: center;
   align-self: center;
+}
+
+.followup-note {
+  overflow: hidden;
+  color: #475569;
+  font-size: 12px;
+  font-style: italic;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .followup-empty {
@@ -802,8 +811,22 @@ select {
   outline: none;
 }
 
+textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 11px;
+  color: #334155;
+  background: #ffffff;
+  font: inherit;
+  font-weight: 400;
+  outline: none;
+  resize: vertical;
+}
+
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }

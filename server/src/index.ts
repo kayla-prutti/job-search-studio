@@ -1,3 +1,5 @@
+import bcrypt from "bcryptjs";
+import cookieParser from "cookie-parser";
 import express from "express";
 import {
   createApplication,
@@ -6,6 +8,13 @@ import {
   listApplications,
   updateApplication,
 } from "./applicationsRepository.js";
+import {
+  createSession,
+  deleteSession,
+  getSessionUserId,
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_MS,
+} from "./auth.js";
 import type {
   Application,
   ApplicationStatus,
@@ -14,11 +23,49 @@ import type {
   UpdateApplicationInput,
   ValidationStatus,
 } from "./types.js";
+import {
+  createUser,
+  getUserByEmailWithPassword,
+  getUserById,
+} from "./usersRepository.js";
+
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
 
 const app = express();
 const port = process.env.PORT ?? 3000;
 
 app.use(express.json());
+app.use(cookieParser());
+
+const setSessionCookie = (res: express.Response, sessionId: string) => {
+  res.cookie(SESSION_COOKIE_NAME, sessionId, {
+    httpOnly: true,
+    maxAge: SESSION_MAX_AGE_MS,
+    path: "/",
+    sameSite: "lax",
+  });
+};
+
+const requireAuth: express.RequestHandler = (req, res, next) => {
+  const sessionId = req.cookies?.[SESSION_COOKIE_NAME] as string | undefined;
+  const userId = sessionId ? getSessionUserId(sessionId) : undefined;
+
+  if (!userId) {
+    res.status(401).json({ error: "Authentication required." });
+    return;
+  }
+
+  req.userId = userId;
+  next();
+};
+
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 const applicationStatuses: ApplicationStatus[] = [
   "Wishlist",
@@ -213,6 +260,89 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.post("/api/auth/signup", (req, res) => {
+  const { email, password } = req.body as { email?: string; password?: string };
+
+  if (!email || !isValidEmail(email)) {
+    res.status(400).json({ error: "A valid email is required." });
+    return;
+  }
+
+  if (!password || password.length < 8) {
+    res.status(400).json({ error: "Password must be at least 8 characters." });
+    return;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (getUserByEmailWithPassword(normalizedEmail)) {
+    res.status(409).json({ error: "An account with this email already exists." });
+    return;
+  }
+
+  const passwordHash = bcrypt.hashSync(password, 10);
+  const user = createUser(normalizedEmail, passwordHash);
+  const session = createSession(user.id);
+
+  setSessionCookie(res, session.id);
+  res.status(201).json({ user });
+});
+
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body as { email?: string; password?: string };
+
+  if (!email || !password) {
+    res.status(400).json({ error: "Email and password are required." });
+    return;
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const userRecord = getUserByEmailWithPassword(normalizedEmail);
+
+  if (!userRecord || !bcrypt.compareSync(password, userRecord.passwordHash)) {
+    res.status(401).json({ error: "Invalid email or password." });
+    return;
+  }
+
+  const session = createSession(userRecord.id);
+
+  setSessionCookie(res, session.id);
+  res.json({
+    user: {
+      id: userRecord.id,
+      email: userRecord.email,
+      createdAt: userRecord.createdAt,
+    },
+  });
+});
+
+app.post("/api/auth/logout", (req, res) => {
+  const sessionId = req.cookies?.[SESSION_COOKIE_NAME] as string | undefined;
+
+  if (sessionId) {
+    deleteSession(sessionId);
+  }
+
+  res.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
+  res.status(204).send();
+});
+
+app.get("/api/auth/me", (req, res) => {
+  const sessionId = req.cookies?.[SESSION_COOKIE_NAME] as string | undefined;
+  const userId = sessionId ? getSessionUserId(sessionId) : undefined;
+  const user = userId ? getUserById(userId) : undefined;
+
+  if (!user) {
+    res.status(401).json({ error: "Not authenticated." });
+    return;
+  }
+
+  res.json({ user });
+});
+
+app.use("/api/job-url", requireAuth);
+app.use("/api/applications", requireAuth);
+
 app.post("/api/job-url/extract", async (req, res) => {
   const { url } = req.body as { url?: string };
 
@@ -314,7 +444,7 @@ app.get("/api/applications", (req, res) => {
     return;
   }
 
-  const results = listApplications({
+  const results = listApplications(req.userId!, {
     status: typeof status === "string" ? status : undefined,
     priority: typeof priority === "string" ? priority : undefined,
     validationStatus:
@@ -328,7 +458,7 @@ app.get("/api/applications", (req, res) => {
 });
 
 app.get("/api/applications/:id", (req, res) => {
-  const application = getApplication(req.params.id);
+  const application = getApplication(req.userId!, req.params.id);
 
   if (!application) {
     res.status(404).json({ error: "Application not found." });
@@ -377,7 +507,7 @@ app.post("/api/applications", (req, res) => {
     validationStatus: input.validationStatus,
   };
 
-  createApplication(application);
+  createApplication(req.userId!, application);
 
   res.status(201).json({ application });
 });
@@ -403,7 +533,7 @@ app.patch("/api/applications/:id", (req, res) => {
     return;
   }
 
-  const updatedApplication = updateApplication(req.params.id, input);
+  const updatedApplication = updateApplication(req.userId!, req.params.id, input);
 
   if (!updatedApplication) {
     res.status(404).json({ error: "Application not found." });
@@ -414,7 +544,7 @@ app.patch("/api/applications/:id", (req, res) => {
 });
 
 app.delete("/api/applications/:id", (req, res) => {
-  const wasDeleted = deleteApplication(req.params.id);
+  const wasDeleted = deleteApplication(req.userId!, req.params.id);
 
   if (!wasDeleted) {
     res.status(404).json({ error: "Application not found." });

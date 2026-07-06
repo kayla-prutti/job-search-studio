@@ -27,3 +27,28 @@ db.exec(`
     validationStatus TEXT NOT NULL
   )
 `);
+
+const applicationColumns = db
+  .prepare("PRAGMA table_info(applications)")
+  .all() as Array<{ name: string }>;
+
+if (!applicationColumns.some((column) => column.name === "userId")) {
+  db.exec("ALTER TABLE applications ADD COLUMN userId TEXT");
+}
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    passwordHash TEXT NOT NULL,
+    createdAt TEXT NOT NULL
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    userId TEXT NOT NULL,
+    expiresAt TEXT NOT NULL
+  )
+`);

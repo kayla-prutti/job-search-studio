@@ -5,6 +5,7 @@ import type {
   ApplicationStatus,
   ExtractJobUrlResponse,
 } from "./shared/types/application";
+import type { User } from "./shared/types/auth";
 import { AppHeader } from "./components/layout/AppHeader";
 import { DatasetTabs, type DatasetView } from "./components/layout/DatasetTabs";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -13,11 +14,14 @@ import { EditApplicationModal } from "./components/modals/EditApplicationModal";
 import { ImportJobUrlModal } from "./components/modals/ImportJobUrlModal";
 import { ApplicationsGrid } from "./features/applications-table/ApplicationsGrid";
 import { ApplicationsToolbar } from "./features/applications-table/ApplicationsToolbar";
+import { LoginPage } from "./features/auth/LoginPage";
 import { FollowUpsView } from "./features/follow-ups/FollowUpsView";
 import { StatusBoard } from "./features/status-board/StatusBoard";
 import "./styles.css";
 
 function App() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [quickFilter, setQuickFilter] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +37,27 @@ function App() {
   const [activeView, setActiveView] = useState<DatasetView>("table");
 
   useEffect(() => {
+    async function checkAuth() {
+      try {
+        const response = await fetch("/api/auth/me");
+
+        if (response.ok) {
+          const data = (await response.json()) as { user: User };
+          setCurrentUser(data.user);
+        }
+      } finally {
+        setIsAuthChecked(true);
+      }
+    }
+
+    void checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      return;
+    }
+
     async function loadApplications() {
       try {
         const response = await fetch("/api/applications");
@@ -51,7 +76,14 @@ function App() {
     }
 
     void loadApplications();
-  }, []);
+  }, [currentUser]);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setCurrentUser(null);
+    setApplications([]);
+    setIsLoading(true);
+  };
 
   const statusCounts = useMemo(
     () =>
@@ -241,11 +273,23 @@ function App() {
     }
   };
 
+  if (!isAuthChecked) {
+    return null;
+  }
+
+  if (!currentUser) {
+    return <LoginPage onAuthenticated={setCurrentUser} />;
+  }
+
   return (
     <div
       className={`app-shell ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
     >
-      <AppHeader onAddJobUrl={() => setIsImportModalOpen(true)} />
+      <AppHeader
+        onAddJobUrl={() => setIsImportModalOpen(true)}
+        onLogout={logout}
+        userEmail={currentUser.email}
+      />
 
       <Sidebar
         applicationCount={applications.length}

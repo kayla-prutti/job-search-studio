@@ -26,7 +26,13 @@ export function StatusBoard({
     const application = applications.find(({ id }) => id === draggingId);
 
     if (application && application.status !== status) {
-      onStatusChange(application, status);
+      const requiresAppliedDate = status !== "Wishlist" && !application.appliedDate;
+
+      if (requiresAppliedDate) {
+        onEdit({ ...application, status });
+      } else {
+        onStatusChange(application, status);
+      }
     }
 
     setDraggingId(null);

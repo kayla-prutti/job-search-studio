@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 
 type ImportJobUrlModalProps = {
   isSaving: boolean;
@@ -65,6 +65,7 @@ export function ImportJobUrlModal({
             onClick={onExtract}
             type="button"
           >
+            {isSaving && <Loader2 className="spin" size={16} />}
             {isSaving ? "Extracting..." : "Extract details"}
           </button>
         </footer>

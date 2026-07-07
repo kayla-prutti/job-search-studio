@@ -1,4 +1,5 @@
-import { Link, LogOut } from "lucide-react";
+import { LogOut, Link } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 type AppHeaderProps = {
   onAddJobUrl: () => void;
@@ -7,6 +8,25 @@ type AppHeaderProps = {
 };
 
 export function AppHeader({ onAddJobUrl, onLogout, userEmail }: AppHeaderProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const initial = userEmail.trim().charAt(0).toUpperCase() || "?";
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
   return (
     <header className="app-header">
       <div className="brand-mark">JS</div>
@@ -30,16 +50,33 @@ export function AppHeader({ onAddJobUrl, onLogout, userEmail }: AppHeaderProps) 
             salary, and description details.
           </div>
         </div>
-        <div className="user-menu">
-          <span>{userEmail}</span>
+        <div className="user-menu" ref={menuRef}>
           <button
-            aria-label="Log out"
-            className="ghost-icon-button"
-            onClick={onLogout}
+            aria-expanded={isMenuOpen}
+            aria-label="Account menu"
+            className="avatar-button"
+            onClick={() => setIsMenuOpen((current) => !current)}
             type="button"
           >
-            <LogOut size={16} />
+            {initial}
           </button>
+          {isMenuOpen && (
+            <div className="user-menu-dropdown" role="menu">
+              <span className="user-menu-email">{userEmail}</span>
+              <button
+                className="user-menu-logout"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  onLogout();
+                }}
+                role="menuitem"
+                type="button"
+              >
+                <LogOut size={16} />
+                Log out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

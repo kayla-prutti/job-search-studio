@@ -26,6 +26,9 @@ export function EditApplicationModal({
   onSave,
   onUpdate,
 }: EditApplicationModalProps) {
+  const isMissingAppliedDate =
+    application.status !== "Wishlist" && !application.appliedDate;
+
   return (
     <div className="modal-backdrop" role="presentation">
       <section
@@ -55,6 +58,9 @@ export function EditApplicationModal({
               value={application.role}
               onChange={(event) => onUpdate({ role: event.target.value })}
             />
+            <small className="field-error" style={{ visibility: "hidden" }}>
+              Placeholder
+            </small>
           </label>
 
           <label>
@@ -64,9 +70,12 @@ export function EditApplicationModal({
               value={application.company}
               onChange={(event) => onUpdate({ company: event.target.value })}
             />
-            {!application.company && (
-              <small className="field-error">Company is required</small>
-            )}
+            <small
+              className="field-error"
+              style={{ visibility: application.company ? "hidden" : "visible" }}
+            >
+              Company is required
+            </small>
           </label>
 
           <label className="full-field">
@@ -105,12 +114,19 @@ export function EditApplicationModal({
           <label>
             Applied date
             <input
+              className={isMissingAppliedDate ? "invalid-input" : ""}
               type="date"
               value={toInputDate(application.appliedDate)}
               onChange={(event) =>
                 onUpdate({ appliedDate: fromInputDate(event.target.value) })
               }
             />
+            <small
+              className="field-error"
+              style={{ visibility: isMissingAppliedDate ? "visible" : "hidden" }}
+            >
+              Set an applied date before moving past Wishlist
+            </small>
           </label>
 
           <label>
@@ -122,12 +138,18 @@ export function EditApplicationModal({
                 onUpdate({ followUpDate: fromInputDate(event.target.value) })
               }
             />
-            {application.status === "Interviewing" &&
-              !application.followUpDate && (
-                <small className="field-error">
-                  Set a follow-up date for interviewing roles
-                </small>
-              )}
+            <small
+              className="field-error"
+              style={{
+                visibility:
+                  application.status === "Interviewing" &&
+                  !application.followUpDate
+                    ? "visible"
+                    : "hidden",
+              }}
+            >
+              Set a follow-up date for interviewing roles
+            </small>
           </label>
 
           <label>
@@ -184,7 +206,7 @@ export function EditApplicationModal({
           </button>
           <button
             className="primary-button"
-            disabled={isSaving || !application.company}
+            disabled={isSaving || !application.company || isMissingAppliedDate}
             onClick={onSave}
             type="button"
           >

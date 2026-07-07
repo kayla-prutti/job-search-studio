@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import bcrypt from "bcryptjs";
 import cookieParser from "cookie-parser";
 import express from "express";
@@ -552,6 +554,24 @@ app.delete("/api/applications/:id", (req, res) => {
   }
 
   res.status(204).send();
+});
+
+// Serve the built React client from the same origin as the API. This keeps
+// the client's relative `/api/...` calls and session cookies working in
+// production without any CORS/cross-site cookie configuration.
+const clientDist = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "..",
+  "client",
+  "dist",
+);
+app.use(express.static(clientDist));
+
+// SPA fallback: serve index.html for any non-API GET so client-side routes
+// (e.g. the login page) resolve on a fresh page load / refresh.
+app.get(/^(?!\/api\/).*/, (_req, res) => {
+  res.sendFile(path.join(clientDist, "index.html"));
 });
 
 app.listen(port, () => {

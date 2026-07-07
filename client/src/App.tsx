@@ -16,6 +16,7 @@ import { ApplicationsGrid } from "./features/applications-table/ApplicationsGrid
 import { ApplicationsToolbar } from "./features/applications-table/ApplicationsToolbar";
 import { LoginPage } from "./features/auth/LoginPage";
 import { FollowUpsView } from "./features/follow-ups/FollowUpsView";
+import { InsightsView } from "./features/insights/InsightsView";
 import { StatusBoard } from "./features/status-board/StatusBoard";
 import "./styles.css";
 
@@ -332,13 +333,7 @@ function App() {
             onEdit={setEditingApplication}
           />
         ) : (
-          <section className="placeholder-panel">
-            <h2>Insights coming soon</h2>
-            <p>
-              This will show status mix, source performance, salary trends, and
-              conversion rates.
-            </p>
-          </section>
+          <InsightsView applications={applications} />
         )}
       </main>
 

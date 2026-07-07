@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: job-search-studio
+    runtime: node
+    plan: free
+    # Install ALL deps (incl. dev: vite, tsc, tsx) then build client + server.
+    buildCommand: npm install --include=dev && npm run build
+    # Run the compiled Express server, which also serves the built client.
+    startCommand: node server/dist/index.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22.11.0"

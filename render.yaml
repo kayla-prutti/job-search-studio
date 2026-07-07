@@ -3,8 +3,11 @@ services:
     name: job-search-studio
     runtime: node
     plan: free
-    # Install ALL deps (incl. dev: vite, tsc, tsx) then build client + server.
-    buildCommand: npm install --include=dev && npm run build
+    # Wipe any cached build output first so the client's index.html and its
+    # hashed assets always come from the SAME fresh build (prevents the
+    # stale-asset 404 that strips the CSS). Then install ALL deps (incl. dev:
+    # vite, tsc, tsx) and build client + server.
+    buildCommand: rm -rf client/dist server/dist && npm install --include=dev && npm run build
     # Run the compiled Express server, which also serves the built client.
     startCommand: node server/dist/index.js
     envVars:
